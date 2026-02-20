@@ -28,7 +28,7 @@ const LAYOUT = {
   safeTop: 84,
   safeBottom: 80,
   safeX: 140,
-  titleGap: 10,
+  titleGap: 12,
   panelTop: 320,
   centerY: 560,
 };
@@ -52,13 +52,182 @@ const ASSETS = {
 };
 
 const Background: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+
+  const drift = interpolate(frame, [0, durationInFrames], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const panX = interpolate(drift, [0, 1], [-40, 40]);
+  const panY = interpolate(drift, [0, 1], [-20, 30]);
+  const zoom = interpolate(drift, [0, 1], [1.08, 1.14]);
+  const hue = interpolate(
+    frame,
+    [0, durationInFrames / 2, durationInFrames],
+    [0, 14, 0]
+  );
+
+  return (
+    <AbsoluteFill>
+      <div
+        style={{
+          position: "absolute",
+          inset: -220,
+          background:
+            "radial-gradient(2400px 1600px at 20% 10%, #1D2440 0%, #0C101B 50%, #070A11 100%)",
+          transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+          filter: `hue-rotate(${hue}deg)`,
+      }}
+    />
+  </AbsoluteFill>
+  );
+};
+
+const TechOverlay: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+  const drift = interpolate(frame, [0, durationInFrames], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const x = interpolate(drift, [0, 1], [0, 220]);
+  const y = interpolate(drift, [0, 1], [0, 160]);
+  const pulse = interpolate(
+    frame,
+    [0, durationInFrames / 2, durationInFrames],
+    [0.12, 0.2, 0.12]
+  );
+
+  const circuitSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'><g fill='none' stroke='%23FFFFFF' stroke-opacity='0.2' stroke-width='1.3' stroke-dasharray='6 10'><path d='M40 120 H220 V80 H360 V200 H520 V140 H700' /><path d='M90 520 V380 H180 V300 H320 V260 H460 V340 H640 V280' /><path d='M120 60 H260 V120 H420 V60 H540 V180 H720' /><path d='M60 260 H200 V340 H360 V300 H520 V420 H700' /></g><g fill='%23FFFFFF' fill-opacity='0.25'><circle cx='220' cy='120' r='4'/><circle cx='360' cy='200' r='3'/><circle cx='520' cy='140' r='4'/><circle cx='180' cy='300' r='3'/><circle cx='320' cy='260' r='4'/><circle cx='460' cy='340' r='3'/></g></svg>`;
+  const circuitSvg2 = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'><g fill='none' stroke='%23FFFFFF' stroke-opacity='0.16' stroke-width='1.6' stroke-dasharray='10 14'><path d='M20 90 H140 V190 H280 V110 H420 V240 H620' /><path d='M140 560 V430 H260 V360 H380 V420 H520 V360 H760' /><path d='M200 40 H360 V160 H520 V120 H680' /><path d='M80 340 H240 V460 H400 V400 H560 V520 H740' /></g><g fill='%23FFFFFF' fill-opacity='0.25'><rect x='256' y='348' width='8' height='8'/><rect x='520' y='356' width='8' height='8'/><rect x='360' y='160' width='8' height='8'/></g></svg>`;
+  const ecgSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 220'><g fill='none' stroke='%23FFFFFF' stroke-opacity='0.25' stroke-width='2'><path d='M0 120 H80 V120 H120 V70 H160 V170 H200 V120 H260 V120 H300 V90 H340 V150 H380 V120 H450 V120 H500 V80 H540 V170 H580 V120 H650 V120 H700 V100 H740 V150 H800 V120'/><path d='M140 120 V190 H220 V190' /><path d='M320 120 V40 H380 V40' /><path d='M520 120 V200 H600 V200' /></g><g fill='%23FFFFFF' fill-opacity='0.3'><circle cx='120' cy='70' r='3'/><circle cx='160' cy='170' r='3'/><circle cx='340' cy='150' r='3'/><circle cx='540' cy='170' r='3'/><circle cx='700' cy='100' r='3'/></g></svg>`;
+
   return (
     <AbsoluteFill
       style={{
-        background:
-          "radial-gradient(1600px 900px at 20% 10%, #1D2440 0%, #0C101B 50%, #070A11 100%)",
+        opacity: 0.12,
+        mixBlendMode: "screen",
+        maskImage:
+          "radial-gradient(circle at 20% 25%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 35%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.2) 75%), radial-gradient(circle at 75% 70%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.2) 72%), linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,1) 80%, rgba(0,0,0,0.75) 100%)",
+        maskComposite: "add",
       }}
-    />
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: -200,
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px), radial-gradient(circle at 10% 20%, rgba(255,255,255,0.2) 1px, transparent 2px), radial-gradient(circle at 70% 80%, rgba(255,255,255,0.18) 1px, transparent 2px)",
+          backgroundSize: "160px 160px, 200px 200px, 240px 240px, 320px 320px",
+          backgroundPosition: `${x}px ${y}px, ${-x}px ${-y}px, 0 0, ${x * 0.2}px ${y * 0.2}px`,
+          filter: `drop-shadow(0 0 12px rgba(255,255,255,${pulse}))`,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: -200,
+          backgroundImage:
+            "linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.14) 1px, transparent 1px)",
+          backgroundSize: "90px 180px, 180px 90px",
+          backgroundPosition: `${-x * 0.3}px ${y * 0.6}px, ${x * 0.5}px ${-y *
+            0.2}px`,
+          opacity: 0.7,
+          maskImage:
+            "radial-gradient(circle at 20% 30%, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 70%), radial-gradient(circle at 80% 70%, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 68%)",
+          maskComposite: "add",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: -200,
+          backgroundImage: `url("${circuitSvg}"), url("${circuitSvg2}")`,
+          backgroundSize: "1200px 900px, 1400px 1000px",
+          backgroundPosition: `${x * 0.4}px ${y * 0.3}px, ${-x * 0.3}px ${y *
+            0.2}px`,
+          opacity: 0.45,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: -200,
+          backgroundImage: `url("${ecgSvg}")`,
+          backgroundSize: "1600px 400px",
+          backgroundPosition: `${-x * 0.6}px ${y * 0.4}px`,
+          opacity: 0.35,
+        }}
+      />
+      {[...new Array(14)].map((_, i) => {
+        const phase = i / 14;
+        const speed = 3.4 + (i % 5) * 0.55;
+        const t = (frame / (speed * fps) + phase) % 1;
+        const x = interpolate(t, [0, 1], [-240, 2160]);
+        const yCenter = 180 + (i % 7) * 70;
+        const wave = Math.sin((t + phase) * Math.PI * 2) * (10 + (i % 4) * 4);
+        const y = yCenter + wave;
+        const baseSize = i % 3 === 0 ? 12 : i % 3 === 1 ? 10 : 8;
+        const pulse =
+          0.8 +
+          0.25 *
+            Math.sin((frame / (3.2 * fps + i * 0.12) + phase) * Math.PI * 2);
+        const size = baseSize * pulse;
+        const glow =
+          0.28 +
+          0.3 *
+            Math.sin((frame / (3.6 * fps + i * 0.14) + phase) * Math.PI * 2);
+        return (
+          <div
+            key={`dot-${i}`}
+            style={{
+              position: "absolute",
+              left: x,
+              top: y,
+              width: size,
+              height: size,
+              borderRadius: 999,
+              background: `rgba(255,255,255,${Math.max(0.2, glow)})`,
+              boxShadow: `0 0 22px rgba(255,255,255,${Math.max(0.2, glow)})`,
+            }}
+          />
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+
+const LogoHero: React.FC<{ start: number }> = ({ start }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const local = frame - start;
+  const opacity = interpolate(local, [0, 0.5 * fps, 2 * fps], [0, 1, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const bounce = spring({
+    frame: local,
+    fps,
+    config: { damping: 14, mass: 0.7 },
+  });
+  const scale = interpolate(bounce, [0, 1], [0.9, 1], {
+    extrapolateRight: "extend",
+  });
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 100,
+        left: "50%",
+        transform: `translateX(-50%) scale(${scale})`,
+        opacity,
+      }}
+    >
+      <Img src={ASSETS.logo} style={{ width: 520, height: 140 }} />
+    </div>
   );
 };
 
@@ -86,7 +255,7 @@ const Title: React.FC<{
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const zoomIn = interpolate(local, [0, duration], [0.96, 1.03], {
+  const zoomIn = interpolate(local, [0, duration], [0.98, 1.02], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -98,8 +267,8 @@ const Title: React.FC<{
       style={{
         justifyContent: "flex-start",
         alignItems: "center",
-        gap: isHero ? 14 : LAYOUT.titleGap,
-        paddingTop: (isHero ? 140 : LAYOUT.safeTop) + offsetY,
+        gap: isHero ? 16 : LAYOUT.titleGap,
+        paddingTop: (isHero ? 130 : LAYOUT.safeTop) + offsetY,
         opacity,
         transform: `translateY(${y}px) scale(${zoomIn})`,
       }}
@@ -107,23 +276,23 @@ const Title: React.FC<{
       <div
         style={{
           fontFamily: "Inter, system-ui, sans-serif",
-          fontSize: isHero ? 104 : 78,
+          fontSize: isHero ? 100 : 76,
           fontWeight: 700,
           color: COLORS.white,
           letterSpacing: isHero ? -2 : -1.5,
           textTransform: isHero ? "uppercase" : "none",
           textShadow: isHero
             ? "0 12px 40px rgba(0,0,0,0.45), 0 0 30px rgba(59,130,246,0.35)"
-            : "0 10px 30px rgba(0,0,0,0.35)",
+            : "0 10px 30px rgba(0,0,0,0.35), 0 0 18px rgba(59,130,246,0.25)",
         }}
       >
         {label}
       </div>
-      {sub ? (
+          {sub ? (
         <div
           style={{
             fontFamily: "Inter, system-ui, sans-serif",
-            fontSize: isHero ? 34 : 28,
+            fontSize: isHero ? 32 : 28,
             fontWeight: 500,
             color: COLORS.slate,
             maxWidth: 1200,
@@ -347,7 +516,8 @@ const InboxCard: React.FC<{ start: number }> = ({ start }) => {
           <div
             key={benefit}
             style={{
-              background: "rgba(30, 41, 59, 0.8)",
+              background: "rgba(20, 184, 166, 0.16)",
+              border: "1px solid rgba(20, 184, 166, 0.35)",
               borderRadius: 999,
               padding: "14px 22px",
               textAlign: "center",
@@ -377,6 +547,7 @@ const FeatureShowcase: React.FC<{
   layout?: "default" | "textWide";
   bulletSize?: number;
   bulletPadding?: { x: number; y: number };
+  titleSize?: number;
 }> = ({
   start,
   title,
@@ -388,6 +559,7 @@ const FeatureShowcase: React.FC<{
   layout = "default",
   bulletSize,
   bulletPadding,
+  titleSize,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -409,6 +581,7 @@ const FeatureShowcase: React.FC<{
     extrapolateRight: "extend",
   });
   const isTextWide = layout === "textWide";
+  const scaleSafe = 1;
 
   return (
     <div
@@ -423,9 +596,9 @@ const FeatureShowcase: React.FC<{
         background: "rgba(15, 23, 42, 0.9)",
         borderRadius: 28,
         border: "1px solid rgba(148, 163, 184, 0.2)",
-        padding: 42,
+        padding: 46,
         display: "grid",
-        gridTemplateColumns: isTextWide ? "1.2fr 0.8fr" : "0.95fr 1.05fr",
+        gridTemplateColumns: isTextWide ? "1.1fr 0.9fr" : "0.95fr 1.05fr",
         gap: isTextWide ? 44 : 40,
       }}
     >
@@ -433,7 +606,7 @@ const FeatureShowcase: React.FC<{
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: 14,
+          gap: 18,
           alignItems: "center",
           justifyContent: "center",
           paddingTop: 0,
@@ -463,7 +636,7 @@ const FeatureShowcase: React.FC<{
           <div
             style={{
               fontFamily: "Inter, system-ui, sans-serif",
-              fontSize: isTextWide ? 38 : 28,
+              fontSize: titleSize ?? (isTextWide ? 38 : 28),
               fontWeight: 700,
               color: COLORS.white,
             }}
@@ -534,8 +707,9 @@ const FeatureShowcase: React.FC<{
             objectFit: "contain",
             transform: `translate(${imageOffset?.x ?? 0}px, ${
               imageOffset?.y ?? 0
-            }px) scale(${imageScale})`,
-            filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.35))",
+            }px) scale(${scaleSafe})`,
+            filter: "drop-shadow(0 18px 36px rgba(0,0,0,0.35))",
+            imageRendering: "auto",
           }}
         />
       </div>
@@ -641,11 +815,16 @@ const CTA: React.FC<{ start: number }> = ({ start }) => {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const scale = spring({
+  const bounce = spring({
     frame: local,
     fps,
     config: { damping: 18, mass: 0.8 },
   });
+  const zoomIn = interpolate(local, [0, 1.2 * fps], [0.95, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const scale = bounce * zoomIn;
 
   return (
     <AbsoluteFill
@@ -654,9 +833,11 @@ const CTA: React.FC<{ start: number }> = ({ start }) => {
         alignItems: "center",
         gap: 28,
         opacity,
+        paddingTop: 40,
+        transform: `scale(${zoomIn})`,
       }}
     >
-      <Img src={ASSETS.logo} style={{ width: 220, height: 60 }} />
+      <Img src={ASSETS.logo} style={{ width: 280, height: 76 }} />
       <div
         style={{
           fontFamily: "Inter, system-ui, sans-serif",
@@ -683,15 +864,17 @@ const CTA: React.FC<{ start: number }> = ({ start }) => {
       <div
         style={{
           transform: `scale(${scale})`,
-          padding: "16px 28px",
+          padding: "20px 36px",
           borderRadius: 999,
           background: COLORS.amber,
           color: COLORS.ink,
           fontFamily: "Inter, system-ui, sans-serif",
-          fontSize: 26,
+          fontSize: 32,
           fontWeight: 700,
           boxShadow:
             "0 18px 50px rgba(245,158,11,0.45), 0 0 24px rgba(245,158,11,0.4)",
+          marginTop: 28,
+          border: "1px solid rgba(255,255,255,0.45)",
         }}
       >
         hibotchat.com
@@ -703,25 +886,37 @@ const CTA: React.FC<{ start: number }> = ({ start }) => {
 export const MyComposition = () => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
+  const tailFrames = Math.round(3 * fps);
 
   const musicVolume = (() => {
-    const fadeIn = interpolate(frame, [0, 1.2 * fps], [0, 0.2], {
+    const fadeInMul = interpolate(frame, [0, 1.2 * fps], [0, 1], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     });
-    const fadeOut = interpolate(
+    const fadeOutMul = interpolate(
       frame,
-      [durationInFrames - 1.2 * fps, durationInFrames],
+      [durationInFrames - 0.8 * fps, durationInFrames],
       [1, 0],
       {
         extrapolateLeft: "clamp",
         extrapolateRight: "clamp",
       }
     );
-    return fadeIn * fadeOut;
+    const voiceEndFrame = durationInFrames - tailFrames;
+    const boosted = interpolate(
+      frame,
+      [voiceEndFrame, voiceEndFrame + 0.8 * fps],
+      [0.2, 0.4],
+      {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      }
+    );
+    const base = frame < voiceEndFrame ? 0.2 : boosted;
+    return base * fadeInMul * fadeOutMul;
   })();
 
-  const weights = [4, 4, 6, 6, 6, 6, 3];
+  const weights = [4, 4, 6, 6, 5, 5, 6];
   const totalWeight = weights.reduce((acc, val) => acc + val, 0);
   const framesPerWeight = durationInFrames / totalWeight;
   const durations = weights.map((w) => Math.floor(w * framesPerWeight));
@@ -759,9 +954,38 @@ export const MyComposition = () => {
         src={staticFile("/audio/hotham_music-love-me-back-instrumental-126983.mp3")}
         volume={musicVolume}
       />
-      <Sequence from={0}>
-        <Audio src={staticFile("/audio/sfx/notification-bell.mp3")} volume={0.35} />
-      </Sequence>
+      {[0, Math.round(0.5 * fps), Math.round(1.0 * fps)].map((offset) => (
+        <Sequence key={`ding-${offset}`} from={offset}>
+          <Audio
+            src={staticFile("/audio/sfx/notification-bell.mp3")}
+            volume={0.35}
+          />
+        </Sequence>
+      ))}
+      {[Math.round(0.08 * fps)].map((delay) => (
+        <Sequence key={`ding-reverb-${delay}`} from={delay} durationInFrames={8}>
+          <Audio
+            src={staticFile("/audio/sfx/notification-bell.mp3")}
+            volume={0.18}
+          />
+        </Sequence>
+      ))}
+      {[Math.round(0.58 * fps)].map((delay) => (
+        <Sequence key={`ding-reverb2-${delay}`} from={delay} durationInFrames={8}>
+          <Audio
+            src={staticFile("/audio/sfx/notification-bell.mp3")}
+            volume={0.16}
+          />
+        </Sequence>
+      ))}
+      {[Math.round(1.08 * fps)].map((delay) => (
+        <Sequence key={`ding-reverb3-${delay}`} from={delay} durationInFrames={8}>
+          <Audio
+            src={staticFile("/audio/sfx/notification-bell.mp3")}
+            volume={0.14}
+          />
+        </Sequence>
+      ))}
       <Sequence from={swooshStart}>
         <Audio
           src={staticFile("/audio/sfx/sfx-swoosh1.mp3")}
@@ -778,17 +1002,19 @@ export const MyComposition = () => {
         <Audio src={staticFile("/audio/sfx/sfx-pop.mp3")} volume={0.3} />
       </Sequence>
       <Background />
+      <TechOverlay />
 
       {frame < scene2Start && (
         <>
-          <Title
-            label="Mensajes por todos lados"
-            sub="WhatsApp, Instagram y web..."
-            start={scene1Start}
-            duration={scene1Duration}
-            variant="hero"
-            offsetY={160}
-          />
+          <LogoHero start={scene1Start} />
+      <Title
+        label="Mensajes por todos lados"
+        sub="WhatsApp, Instagram y web..."
+        start={scene1Start}
+        duration={scene1Duration}
+        variant="hero"
+        offsetY={190}
+      />
           <ChannelBubble
             label="WhatsApp"
             color={COLORS.teal}
@@ -829,7 +1055,7 @@ export const MyComposition = () => {
             duration={scene1Duration}
             delay={0.6 * fps}
             from={{ x: -620, y: 320 }}
-            to={{ x: -300, y: 260 }}
+            to={{ x: -300, y: 240 }}
             icon={ASSETS.channelWeb}
             sizeScale={1.16}
           />
@@ -840,7 +1066,7 @@ export const MyComposition = () => {
             duration={scene1Duration}
             delay={0.75 * fps}
             from={{ x: -760, y: 140 }}
-            to={{ x: 80, y: 260 }}
+            to={{ x: 80, y: 240 }}
             icon={ASSETS.channelTelegram}
             sizeScale={1.16}
           />
@@ -925,8 +1151,9 @@ export const MyComposition = () => {
             bullets={["KPIs clave", "Alertas automáticas", "Reportes claros"]}
             imageScale={1}
             imageOffset={{ x: 0, y: 0 }}
-            bulletSize={26}
-            bulletPadding={{ x: 28, y: 16 }}
+            bulletSize={30}
+            bulletPadding={{ x: 30, y: 18 }}
+            titleSize={34}
           />
         </>
       )}
@@ -939,7 +1166,7 @@ export const MyComposition = () => {
             start={scene6Start}
             duration={scene6Duration}
             variant="default"
-            offsetY={240}
+            offsetY={200}
           />
           <UseCases start={scene6Start + 0.4 * fps} duration={scene6Duration} />
         </>
